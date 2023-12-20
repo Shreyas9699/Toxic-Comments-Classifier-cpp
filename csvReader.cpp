@@ -7,47 +7,32 @@
 #include <random>
 #include <algorithm>
 
-std::vector<std::vector<std::string>> csvFileReader (const char* filename) {
-    //std::string filename = "train.csv";
+
+std::vector<std::string> readData(const std::string& filename) {
     std::ifstream file(filename);
-    std::vector<std::vector<std::string>> data;
+    std::vector<std::string> data;
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return data; // Return empty data on error
+    }
 
     std::string line;
-    while (std::getline (file, line)) {
-        std::vector<std::string> row;
-        std::istringstream iss(line);
-        std::string field;
-        while (std::getline (iss, field, ',')) {
-            row.push_back(field);
-        }
-        data.push_back(row);
+    while (std::getline(file, line)) {
+        // boost::tokenizer<boost::escaped_list_separator<char>> tok(line);
+        data.push_back(line);
     }
-
-    file.close();
-
-    // Iterate through each row and element, replacing empty strings with your desired fill value (" " in this case):
-    for (auto& row : data) {
-        for (auto& element : row) {
-            if (element.empty()) {
-                element = " ";
-            }
-        }
-    }
-
-    std::random_device ranD;
-    std::mt19937 gen(ranD());
-    std::shuffle(data.begin(), data.end(), gen);
 
     return data;
 }
 
-void printSample (std::vector<std::vector<std::string>> sample) {
+
+void printSample (std::vector<std::string> sample) {
     std::cout << "First 10 rows from the of the data set are : " << std::endl;
 
+    int rowCnt = 0;
     for (const auto& row : sample) {
-        for (const auto& element : row) {
-            std::cout << element << " ";
-        }
-        std::cout << std::endl;
+        std::cout << "Row " << rowCnt + 1 << ": \t" << row << std::endl;
+        rowCnt++;
     }
 }
