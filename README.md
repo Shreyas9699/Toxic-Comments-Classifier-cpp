@@ -14,3 +14,23 @@ Once you have the .csv files, we will need to do some data process!<br/>
 I have used the `DataPreProcessor.py` file, since the comments have a lot of new line and processing it via C++ was bit overwhelming!
 
 Just run the py code and it will generate the new files that containts only the necessary files
+
+
+`fitOnTexts` Method -> Builds a vocabulary (word index) from a collection of text samples.
+- Assigns a unique integer ID to each word, starting from 1 (index 0 is reserved).
+- Retains only the most frequent maxFeatures words.
+
+
+`textToSequence` Method ->
+- Converts a single text string into a sequence of integer IDs based on the vocabulary.
+- Omitted words (not in the vocabulary) are excluded.
+
+
+`textsToSequences` Method ->
+- Tokenizes multiple text samples into sequences of integer IDs.
+
+
+`padSequence` Method ->
+- Ensures all sequences have the same length (maxlen) by:
+- Truncating longer sequences.
+- Padding shorter sequences with zeros.
