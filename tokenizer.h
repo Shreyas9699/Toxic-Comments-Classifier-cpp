@@ -15,7 +15,7 @@ public:
 
 private:
     int maxFeatures;
-    std::unordered_map<std::string, int> wordIndex;
+    std::unordered_map<std::string, int> wordIdx;
 
     std::vector<int> textToSequence(const std::string& text) const;
     std::vector<std::vector<int>> textsToSequences(const std::vector<std::string>& texts) const;

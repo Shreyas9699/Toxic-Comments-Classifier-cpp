@@ -13,9 +13,31 @@ Tokenizer::Tokenizer(int maxFeatures) {
 }
 
 // Fit on texts and return tokenized sequences
-std::vector<std::vector<int>> Tokenizer::fitOnTexts(const std::vector<std::string>& texts) {
-    createWordIndex(texts);
-    return textsToSequences(texts);
+std::vector<std::vector<int>> Tokenizer::fitOnTexts(const std::vector<std::string>& data) {
+    createWordIndex(data);
+    return textsToSequences(data);
+}
+
+// Tokenize all texts and return sequences of token indices
+std::vector<std::vector<int>> Tokenizer::textsToSequences (const std::vector<std::string>& data) const {
+    std::vector<std::vector<int>> sequences;
+    for (const auto& text : data) {
+        sequences.push_back(textToSequence(text));
+    }
+    return sequences;
+}
+
+// Tokenize text and return sequence of token indices
+std::vector<int> Tokenizer::textToSequence (const std::string& text) const {
+    std::vector<int> sequence;
+    std::istringstream iss(text);
+    std::string word;
+    while (iss >> word) {
+        if (wordIdx.find(word) != wordIdx.end()) {
+            sequence.push_back(wordIdx.at(word));
+        }
+    }
+    return sequence;
 }
 
 // Pad sequences to the specified maxlen
@@ -25,29 +47,6 @@ std::vector<std::vector<int>> Tokenizer::padSequences (const std::vector<std::ve
         paddedSequences.push_back(padSequence(sequence, maxlen));
     }
     return paddedSequences;
-}
-
-
-// Tokenize text and return sequence of token indices
-std::vector<int> Tokenizer::textToSequence (const std::string& text) const {
-    std::vector<int> sequence;
-    std::istringstream iss(text);
-    std::string word;
-    while (iss >> word) {
-        if (wordIndex.find(word) != wordIndex.end()) {
-            sequence.push_back(wordIndex.at(word));
-        }
-    }
-    return sequence;
-}
-
-// Tokenize all texts and return sequences of token indices
-std::vector<std::vector<int>> Tokenizer::textsToSequences (const std::vector<std::string>& texts) const {
-    std::vector<std::vector<int>> sequences;
-    for (const auto& text : texts) {
-        sequences.push_back(textToSequence(text));
-    }
-    return sequences;
 }
 
 // Pad sequence to the specified maxlen
@@ -67,9 +66,13 @@ void Tokenizer::createWordIndex (const std::vector<std::string>& texts) {
     std::vector<std::string> allWords;
     for (const auto& text : texts) {
         std::istringstream iss(text);
-        std::copy(std::istream_iterator<std::string>(iss),
-                  std::istream_iterator<std::string>(),
-                  std::back_inserter(allWords));
+        std::transform(std::istream_iterator<std::string>(iss),
+               std::istream_iterator<std::string>(),
+               std::back_inserter(allWords),
+               [](std::string word) { 
+                   std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+                   return word; 
+               }); // coverting each word to lowercase
     }
 
     // Remove duplicate words
@@ -81,8 +84,9 @@ void Tokenizer::createWordIndex (const std::vector<std::string>& texts) {
 
     // Create word index
     for (int i = 0; i < allWords.size(); ++i) {
-        wordIndex[allWords[i]] = i + 1;  // Index 0 is reserved
+        wordIdx[allWords[i]] = i + 1;  // Index 0 is reserved
     }
+    std::cout << "Created wordIdx, size is : " << wordIdx.size() << std::endl;
 }
 
 std::vector<std::vector<std::vector<float>>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim, int maxFeatures) {

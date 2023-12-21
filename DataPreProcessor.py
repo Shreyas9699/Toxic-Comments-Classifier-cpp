@@ -18,8 +18,8 @@ x_test_df['comment_text'] = x_test_df['comment_text'].apply(lambda x: re.sub(r'\
 # x_df['comment_text'] = x_df['comment_text'].str.replace(r'\n', '')
 # x_test_df['comment_text'] = x_test_df['comment_text'].str.replace(r'\n', '')
 
-x_df.loc[:, 'comment_text'] = (x_df['comment_text'].str.replace(r'\n', ' '))
-x_test_df.loc[:, 'comment_text'] = (x_test_df['comment_text'].str.replace(r'\n', ' '))
+x_df.loc[:, 'comment_text'] = (x_df['comment_text'].str.replace(r'\n', ' ').str.lower())
+x_test_df.loc[:, 'comment_text'] = (x_test_df['comment_text'].str.replace(r'\n', ' ').str.lower())
 
 # Write DataFrames to CSV files
 x_df.to_csv('data/x_train.csv', index=False, header=None)
