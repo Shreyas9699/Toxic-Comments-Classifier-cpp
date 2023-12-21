@@ -23,4 +23,5 @@ private:
     void createWordIndex(const std::vector<std::string>& texts);
 };
 
-std::vector<std::vector<std::vector<float>>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim, int maxFeatures);
+std::vector<std::vector<float>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim,
+                                                        int maxFeatures, int maxTextLength);

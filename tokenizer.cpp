@@ -20,14 +20,16 @@ std::vector<std::vector<int>> Tokenizer::fitOnTexts(const std::vector<std::strin
 
 // Tokenize all texts and return sequences of token indices
 std::vector<std::vector<int>> Tokenizer::textsToSequences (const std::vector<std::string>& data) const {
+    std::cout << "Tokenizing the data into sequence" << std::endl;
     std::vector<std::vector<int>> sequences;
     for (const auto& text : data) {
         sequences.push_back(textToSequence(text));
     }
+    std::cout << "Tokenizing Completed! Tokenized data size is :" << sequences.size() << " " << sequences[0].size() << std::endl;
     return sequences;
 }
 
-// Tokenize text and return sequence of token indices
+// Tokenize each text and return sequence of token indices
 std::vector<int> Tokenizer::textToSequence (const std::string& text) const {
     std::vector<int> sequence;
     std::istringstream iss(text);
@@ -42,10 +44,12 @@ std::vector<int> Tokenizer::textToSequence (const std::string& text) const {
 
 // Pad sequences to the specified maxlen
 std::vector<std::vector<int>> Tokenizer::padSequences (const std::vector<std::vector<int>>& sequences, int maxlen) {
+    std::cout << "Padding the data" << std::endl;
     std::vector<std::vector<int>> paddedSequences;
     for (const auto& sequence : sequences) {
         paddedSequences.push_back(padSequence(sequence, maxlen));
     }
+    std::cout << "Completed Padding!" << std::endl;
     return paddedSequences;
 }
 
@@ -63,16 +67,13 @@ std::vector<int> Tokenizer::padSequence (const std::vector<int>& sequence, int m
 
 // Create word index from texts
 void Tokenizer::createWordIndex (const std::vector<std::string>& texts) {
+    std::cout << "Creating wordIdx" << std::endl;
     std::vector<std::string> allWords;
     for (const auto& text : texts) {
         std::istringstream iss(text);
-        std::transform(std::istream_iterator<std::string>(iss),
+        std::copy(std::istream_iterator<std::string>(iss),
                std::istream_iterator<std::string>(),
-               std::back_inserter(allWords),
-               [](std::string word) { 
-                   std::transform(word.begin(), word.end(), word.begin(), ::tolower);
-                   return word; 
-               }); // coverting each word to lowercase
+               std::back_inserter(allWords));
     }
 
     // Remove duplicate words
@@ -89,43 +90,22 @@ void Tokenizer::createWordIndex (const std::vector<std::string>& texts) {
     std::cout << "Created wordIdx, size is : " << wordIdx.size() << std::endl;
 }
 
-std::vector<std::vector<std::vector<float>>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim, int maxFeatures) {
+std::vector<std::vector<float>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int maxFeatures, int embeddingDim, int maxTextLength) {
     // Create a zero-filled embedding matrix using NumPy
-    std::cout << "Started creating EmbeddingMatrix" << std::endl;
-    std::vector<std::vector<float>> embedding_matrix(maxFeatures, std::vector<float>(embeddingDim, 0.0f));
-    std::vector<std::vector<std::vector<double>>> embedded_sequences;
-
-    std::cout << "initiliased EmbeddingMatrix" << std::endl;
-    
-    for (const std::vector<int>& sequence : xTrainVal) {
-        std::vector<std::vector<double>> embedded_sequence;
-        for (int word_index : sequence) {
-            std::vector<double> embedding_vector(embeddingDim);
-            for (int i = 0; i < embeddingDim; i++) {
-                embedding_vector[i] = embedding_matrix[word_index][i];
-            }
-            embedded_sequence.push_back(embedding_vector);
+    std::cout << "Started creating EmbeddingMatrix of dimension : " << maxFeatures << "x" << embeddingDim << std::endl;
+    std::vector<std::vector<float>> embeddingMatrix(maxFeatures, std::vector<float>(embeddingDim, 0.0));
+    std::vector<std::vector<float>> embeddedData;
+    for (const auto& sequence : xTrainVal) {
+        std::vector<std::vector<float>> embeddedSequence;
+        for (int wordIndex : sequence) {
+            embeddedSequence.push_back(embeddingMatrix[wordIndex]);
         }
-        embedded_sequences.push_back(embedded_sequence);
+        std::vector<float> flattenedSequence(maxTextLength * embeddingDim);
+        std::transform(embeddedSequence.begin(), embeddedSequence.end(), flattenedSequence.begin(),
+               [](const std::vector<float>& vec) { return vec[0]; }); // Return the first element
+        embeddedData.push_back(flattenedSequence);
     }
-
-    std::cout << "Created embedded_sequences" << std::endl;
-
-    std::vector<std::vector<std::vector<float>>> embedded_data(embedded_sequences.size(), std::vector<std::vector<float>>(maxFeatures, std::vector<float>(embeddingDim, 0.0f)));
-    std::cout << "Created embedded_data" << std::endl;
-    
-    // Copy data from embedded_sequences to embedded_data
-    for (size_t i = 0; i < embedded_sequences.size(); i++) {
-        for (size_t j = 0; j < maxFeatures; j++) {
-            for (size_t k = 0; k < embeddingDim; k++) {
-                embedded_data[i][j][k] = embedded_sequences[i][j][k];
-            }
-        }
-    }
-    std::cout << "Copying data from embedded_sequences to embedded_data complete!" << std::endl;
-
-    std::cout << "Embedded data dim: " << embedded_data.size() << "x" << embedded_data[0].size() << "x" << embedded_data[0][0].size() << std::endl;
-
-    return embedded_data;
+    std::cout << "Completed creating EmbeddingMatrix !" << std::endl;
+    return embeddingMatrix;
 
 }

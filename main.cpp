@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+void printRandomSubset(const std::vector<std::vector<int>>& xTrainVal, int subsetSize);
+
 int main () {
     srand(time(NULL));
     rand();
@@ -26,28 +28,17 @@ int main () {
 
     // Pad sequences to maxTextLength
     vector<vector<int>> xTrainVal = xTokenizer.padSequences(xTokenized, maxTextLength);
-    cout << xTrainVal.size() << " " <<  xTrainVal[10].size() << endl;
-
     cout << "Tokenization got completed!" << endl;
+    cout << "Training data dimension : " << xTrainVal.size() << "x" <<  xTrainVal[10].size() << endl;
 
-    int cnt = 25;
-    for (auto row: xTrainVal) {
-        if (cnt--) {
-            for (auto i: row){
-                cout << i << " ";
-            }
-            cout << endl;
-        } else {
-            break;
-        }
-    }
-
+    // Print random records from xTrainVal
+    // printRandomSubset(xTrainVal, 5);
+    
     int embedding_dim = 100;
     int epochs = 1000;
     double MSE;
 
-    // cout << "Calling createEmbeddingMatrix" << endl;
-    // vector<vector<vector<float>>> embedded_data = createEmbeddingMatrix (xTrainVal, embedding_dim, maxFeatures);
+    vector<vector<float>> embedded_data = createEmbeddingMatrix (xTrainVal, maxFeatures, embedding_dim, maxTextLength);
 
     // MultilayerPerceptron model({100, 64, 1});
 
@@ -59,4 +50,22 @@ int main () {
     // cout << "7 to 1 Network MSE: " << MSE << endl;
     
     return 0;
+}
+
+void printRandomSubset(const std::vector<std::vector<int>>& xTrainVal, int subsetSize) {
+    // Create a vector of indices
+    std::vector<int> indices(xTrainVal.size());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    // Shuffle the indices randomly
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(indices.begin(), indices.end(), g);
+
+    for (int i = 0; i < subsetSize; ++i) {
+        for (int j = 0; j < xTrainVal[indices[i]].size(); ++j) {
+            cout << xTrainVal[i][j] << " ";
+        }
+         cout << endl;
+    }
 }
