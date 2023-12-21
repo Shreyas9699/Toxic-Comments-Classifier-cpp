@@ -84,3 +84,44 @@ void Tokenizer::createWordIndex (const std::vector<std::string>& texts) {
         wordIndex[allWords[i]] = i + 1;  // Index 0 is reserved
     }
 }
+
+std::vector<std::vector<std::vector<float>>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim, int maxFeatures) {
+    // Create a zero-filled embedding matrix using NumPy
+    std::cout << "Started creating EmbeddingMatrix" << std::endl;
+    std::vector<std::vector<float>> embedding_matrix(maxFeatures, std::vector<float>(embeddingDim, 0.0f));
+    std::vector<std::vector<std::vector<double>>> embedded_sequences;
+
+    std::cout << "initiliased EmbeddingMatrix" << std::endl;
+    
+    for (const std::vector<int>& sequence : xTrainVal) {
+        std::vector<std::vector<double>> embedded_sequence;
+        for (int word_index : sequence) {
+            std::vector<double> embedding_vector(embeddingDim);
+            for (int i = 0; i < embeddingDim; i++) {
+                embedding_vector[i] = embedding_matrix[word_index][i];
+            }
+            embedded_sequence.push_back(embedding_vector);
+        }
+        embedded_sequences.push_back(embedded_sequence);
+    }
+
+    std::cout << "Created embedded_sequences" << std::endl;
+
+    std::vector<std::vector<std::vector<float>>> embedded_data(embedded_sequences.size(), std::vector<std::vector<float>>(maxFeatures, std::vector<float>(embeddingDim, 0.0f)));
+    std::cout << "Created embedded_data" << std::endl;
+    
+    // Copy data from embedded_sequences to embedded_data
+    for (size_t i = 0; i < embedded_sequences.size(); i++) {
+        for (size_t j = 0; j < maxFeatures; j++) {
+            for (size_t k = 0; k < embeddingDim; k++) {
+                embedded_data[i][j][k] = embedded_sequences[i][j][k];
+            }
+        }
+    }
+    std::cout << "Copying data from embedded_sequences to embedded_data complete!" << std::endl;
+
+    std::cout << "Embedded data dim: " << embedded_data.size() << "x" << embedded_data[0].size() << "x" << embedded_data[0][0].size() << std::endl;
+
+    return embedded_data;
+
+}

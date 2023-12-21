@@ -22,3 +22,5 @@ private:
     std::vector<int> padSequence(const std::vector<int>& sequence, int maxlen) const;
     void createWordIndex(const std::vector<std::string>& texts);
 };
+
+std::vector<std::vector<std::vector<float>>> createEmbeddingMatrix(const std::vector<std::vector<int>>& xTrainVal, int embeddingDim, int maxFeatures);
