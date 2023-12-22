@@ -9,6 +9,7 @@ y_df = train_df[['toxic']]        # Create a DataFrame with 'toxic' column
 
 test_df = pd.read_csv('data/test.csv')
 x_test_df = test_df[['comment_text']]
+y_test_df = train_df[['toxic']]
 
 # print(x_df.sample(10, random_state = 0))
 
@@ -25,3 +26,4 @@ x_test_df.loc[:, 'comment_text'] = (x_test_df['comment_text'].str.replace(r'\n',
 x_df.to_csv('data/x_train.csv', index=False, header=None)
 y_df.to_csv('data/y_train.csv', index=False, header=None)
 x_test_df.to_csv('data/x_test.csv', index=False, header=None)
+y_test_df.to_csv('data/y_test.csv', index=False, header=None)
