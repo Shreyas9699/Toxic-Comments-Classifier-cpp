@@ -34,3 +34,14 @@ Just run the py code and it will generate the new files that containts only the 
 - Ensures all sequences have the same length (maxlen) by:
 - Truncating longer sequences.
 - Padding shorter sequences with zeros.
+
+
+g++ -g
+valgrind ./main
+valgrind --leak-check=full ./main
+
+valgrind --tool=massif ./main
+ms_print massif.out.13305
+kcachegrind massif.out.13305
+
+valgrind --tool=massif --massif-out-file=massif.out.13305 ./main

@@ -25,7 +25,7 @@ std::vector<std::vector<int>> Tokenizer::textsToSequences (const std::vector<std
     for (const auto& text : data) {
         sequences.push_back(textToSequence(text));
     }
-    std::cout << "Tokenizing Completed! Tokenized data size is :" << sequences.size() << " " << sequences[0].size() << std::endl;
+    std::cout << "Tokenizing Completed! Tokenized data size is :" << sequences.size() << "x" << sequences[0].size() << std::endl;
     return sequences;
 }
 

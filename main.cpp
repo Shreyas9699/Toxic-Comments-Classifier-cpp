@@ -17,14 +17,14 @@ int main () {
     vector<string> xTestData = readData ("data/x_test.csv");
 
     // Parameters
-    int maxFeatures = 20000;
-    int maxTextLength = 400;
+    int maxFeatures = 8000; // 20000 reduced to 10000
+    int maxTextLength = 350; // 400 reduced to 350
 
     // Tokenizer instance
     Tokenizer xTokenizer(maxFeatures);
 
     // Fit on texts and get tokenized sequences
-    vector<vector<int>> xTokenized = xTokenizer.fitOnTexts(xTrainData);
+    vector<vector<int>> xTokenized = xTokenizer.fitOnTexts(vector<string> (xTrainData.begin(), xTrainData.begin() + 30000));
 
     // Pad sequences to maxTextLength
     vector<vector<int>> xTrainVal = xTokenizer.padSequences(xTokenized, maxTextLength);
