@@ -67,7 +67,6 @@
         "xutility": "cpp",
         "cinttypes": "cpp",
         "map": "cpp",
-        "set": "cpp",
-        "unordered_set": "cpp"
+        "set": "cpp"
     }
 }
