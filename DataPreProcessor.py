@@ -27,3 +27,17 @@ x_df.to_csv('data/x_train.csv', index=False, header=None)
 y_df.to_csv('data/y_train.csv', index=False, header=None)
 x_test_df.to_csv('data/x_test.csv', index=False, header=None)
 y_test_df.to_csv('data/y_test.csv', index=False, header=None)
+
+
+toxic_comments = train_df[train_df['toxic'] == 1][['comment_text']]
+NON_toxic_comments = train_df[train_df['toxic'] == 0][['comment_text']]
+
+toxic_comments['comment_text'] = toxic_comments['comment_text'].apply(lambda x: re.sub(r'\n', r'\\n', x))
+NON_toxic_comments['comment_text'] = NON_toxic_comments['comment_text'].apply(lambda x: re.sub(r'\n', r'\\n', x))
+
+toxic_comments.loc[:, 'comment_text'] = (toxic_comments['comment_text'].str.replace(r'\n', ' ').str.lower())
+NON_toxic_comments.loc[:, 'comment_text'] = (NON_toxic_comments['comment_text'].str.replace(r'\n', ' ').str.lower())
+
+toxic_comments.to_csv('data/toxic_comments.csv', index=False, header=None)
+NON_toxic_comments.to_csv('data/non_toxic_comments.csv', index=False, header=None)
+
