@@ -13,35 +13,63 @@ CodeSpace and Github was not allowing to upload files greater than 25MB, hence u
 Once you have the .csv files, we will need to do some data process!<br/>
 I have used the `DataPreProcessor.py` file, since the comments have a lot of new line and processing it via C++ was bit overwhelming!
 
-Just run the py code and it will generate the new files that containts only the necessary files
+Just run the py code and it will generate the new files that containts only the necessary files.<br />
+I have futher cleared all the data an took only 300 record comments only each type is dsitributed equally.
+
+## Steps involved in prepardng data
+
+### tokenizeData :
+This function takes a vector of strings and tokenizes each string using the boost::tokenizer with an escaped_list_separator. The result is a vector of vectors of strings, where each inner vector represents the tokens of a corresponding input string.
+
+### createVocabulary :
+This function takes tokenized data and creates a vocabulary by inserting unique words from the tokenized data into a set. It ensures that the vocabulary size does not exceed a maximum specified size.
+
+### padData function :
+This function pads each sequence in the numeric datawith a specified padding token index to achieve a uniform sequence length (`maxSequenceLength`).
+
+### createWordIdx function :
+Creates a word-to-index mapping by iterating through the provided vocabulary and assigning an index to each word. The indices start from 1 and are incremented for each unique word (Index 0 is used by padding token).
+
+### tokenizeAndNumberizeData function :
+This function takes tokenized data and converts it into a numeric representation by replacing each token with its corresponding index from the wordToIndex mapping.
+
+### createEmbeddingMatrix function :
+This function creates a random embedding matrix of size vocabSize by embeddingDimension. It initializes the matrix with random values sampled from a uniform distribution between -0.5 and 0.5, providing a consistent initialization for the embeddings.
+
+The data is processed and now its ready to be feed to the Neural Network.
+
+## Training Model
+
+I have implemented a simple Multi-Layer Perceptron in my previous project [Link here](https://github.com/Shreyas9699/Neural-Network-CPP/tree/main).
+I have used the same code to create a MLP and then train the model with the above data.
 
 
-`fitOnTexts` Method -> Builds a vocabulary (word index) from a collection of text samples.
-- Assigns a unique integer ID to each word, starting from 1 (index 0 is reserved).
-- Retains only the most frequent maxFeatures words.
+### Output:
+##### Commad: `g++ -g main.cpp header/csvReader.cpp header/MLPerceptrons.cpp header/dataPreProcessor.cpp -o main`
+Once training it done. You can enter test string where you can input strings to get and model will predict wether the string is toxic or non toxic. 
+
+![Alt text](image.png)
 
 
-`textToSequence` Method ->
-- Converts a single text string into a sequence of integer IDs based on the vocabulary.
-- Omitted words (not in the vocabulary) are excluded.
+
+### Prerequisite:
+* gcc/g++ compiler
+* Install Boost Lib: <br />
+        `sudo apt install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev` <br />
+        `wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz` <br />
+        `tar -xzf boost_1_84_0.tar.gz` <br />
+        `cd boost_1_84_0` <br />
+        `./bootstrap.sh` <br />
+        `./b2 --prefix=/usr/local` <br />
+        `sudo ./b2 install` <br />
+        `locate libboost` <br />
+    Once installed, add the path in config file. 
 
 
-`textsToSequences` Method ->
-- Tokenizes multiple text samples into sequences of integer IDs.
+
+#### Remark:
+- Since this is a huge dataset and running it all in C++ causing memory leaks. And Since I still do not have enough experties in memory managment I have reduced the size to managable.
+- This is not optimized, I have justed wanted to try implement a working classifier in C++, Please feel free to take and optimized it!
+- The same dataset is already impleted in python using similar structure in python, [Click here](https://github.com/Shreyas9699/Convolutions-text-classification)
 
 
-`padSequence` Method ->
-- Ensures all sequences have the same length (maxlen) by:
-- Truncating longer sequences.
-- Padding shorter sequences with zeros.
-
-
-g++ -g
-valgrind ./main
-valgrind --leak-check=full ./main
-
-valgrind --tool=massif ./main
-ms_print massif.out.13305
-kcachegrind massif.out.13305
-
-valgrind --tool=massif --massif-out-file=massif.out.13305 ./main

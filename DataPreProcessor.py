@@ -40,4 +40,3 @@ NON_toxic_comments.loc[:, 'comment_text'] = (NON_toxic_comments['comment_text'].
 
 toxic_comments.to_csv('data/toxic_comments.csv', index=False, header=None)
 NON_toxic_comments.to_csv('data/non_toxic_comments.csv', index=False, header=None)
-
