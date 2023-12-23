@@ -48,7 +48,7 @@ I have used the same code to create a MLP and then train the model with the abov
 ##### Commad: `g++ -g main.cpp header/csvReader.cpp header/MLPerceptrons.cpp header/dataPreProcessor.cpp -o main`
 Once training it done. You can enter test string where you can input strings to get and model will predict wether the string is toxic or non toxic. 
 
-![Alt text](/workspaces/Toxic-Comments-Classifier-cpp/media/image.png)
+![Alt text](media/image.png)
 
 
 
