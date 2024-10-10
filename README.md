@@ -45,26 +45,14 @@ I have used the same code to create a MLP and then train the model with the abov
 
 
 ### Output:
-##### Commad: `g++ -g main.cpp header/csvReader.cpp header/MLPerceptrons.cpp header/dataPreProcessor.cpp -o main`
+##### Commad: `g++ -g main.cpp header/csvReader.cpp header/MLPerceptrons.cpp header/Tokenizer.cpp header/dataPreProcessor.cpp -o main`
 Once training it done. You can enter test string where you can input strings to get and model will predict wether the string is toxic or non toxic. 
 
 ![Alt text](media/image.png)
 
 
-
-### Prerequisite:
-* gcc/g++ compiler
-* Install Boost Lib: <br />
-        `sudo apt install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev` <br />
-        `wget https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz` <br />
-        `tar -xzf boost_1_84_0.tar.gz` <br />
-        `cd boost_1_84_0` <br />
-        `./bootstrap.sh` <br />
-        `./b2 --prefix=/usr/local` <br />
-        `sudo ./b2 install` <br />
-        `locate libboost` <br />
-    Once installed, add the path in config file. 
-
+### Updates:
+> `10=OCT-2024` Added custom Tokenizer code, no need for Boost Lib anymore.
 
 
 #### Remark:

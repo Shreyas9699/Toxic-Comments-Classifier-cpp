@@ -1,21 +1,90 @@
 #include <iostream>
 #include <vector>
-#include <set>
 #include <string>
-#include <unordered_map>
-#include <random>
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
 #include "header/csvReader.h"
 #include "header/MLPerceptrons.h"
 #include "header/dataPreProcessor.h"
+#include "header/Tokenizer.h"
+
+// Thread-safe queue for batch processing
+class ThreadSafeQueue 
+{
+private:
+    std::queue<std::vector<std::string>> queue;
+    std::mutex mutex;
+    std::condition_variable cond;
+    bool finished = false;
+
+public:
+    void push(const std::vector<std::string>& value) 
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        queue.push(value);
+        cond.notify_one();
+    }
+
+    bool pop(std::vector<std::string>& value) 
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        cond.wait(lock, [this] { return !queue.empty() || finished; });
+        if (queue.empty() && finished) return false;
+        value = queue.front();
+        queue.pop();
+        return true;
+    }
+
+    void setFinished() 
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        finished = true;
+        cond.notify_all();
+    }
+};
+
+// Function to process a batch of data
+void processBatch(ThreadSafeQueue& dataQueue, MultilayerPerceptron& mlpModel,
+                  std::vector<std::vector<double>>& embeddingMatrix,
+                  std::vector<double>& yTrainData, double& totalMSE, 
+                  int& processedSamples, std::mutex& mse_mutex) 
+                  {
+    std::vector<std::string> batch;
+    while (dataQueue.pop(batch)) 
+    {
+        std::vector<std::vector<std::string>> tokenizedBatch = tokenizeData(batch);
+        std::vector<std::vector<int>> numericBatch = tokenizeAndNumberizeData(tokenizedBatch);
+        padData(numericBatch, 400, wordToIndex["<PAD>"]);
+
+        double batchMSE = 0.0;
+        for (size_t i = 0; i < numericBatch.size(); ++i) 
+        {
+            std::vector<double> input;
+            for (int index : numericBatch[i]) 
+            {
+                input.insert(input.end(), embeddingMatrix[index].begin(), embeddingMatrix[index].end());
+            }
+            batchMSE += mlpModel.backPropagation(input, {yTrainData[processedSamples + i]});
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mse_mutex);
+            totalMSE += batchMSE;
+            processedSamples += numericBatch.size();
+        }
+    }
+}
 
 int main () {
     std::vector<std::string> rawXTrainData = readData ("data/100toxic_nonToxic_X.csv");
     std::vector<double> rawYTrainData = convertToDouble(readData ("data/100toxic_nonToxic_Y.csv"));
 
-    for (int i = 0; i < 300; i += 50) {
-        std::cout << rawXTrainData[i] << std::endl;
-        std::cout << rawYTrainData[i] << std::endl;
-    }
+    // for (int i = 0; i < 300; i += 50) {
+    //     std::cout << rawXTrainData[i] << std::endl;
+    //     std::cout << rawYTrainData[i] << std::endl;
+    // }
 
 	MultilayerPerceptron mlpModel({100, 66, 33, 1});
 	

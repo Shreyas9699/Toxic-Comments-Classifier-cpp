@@ -2,16 +2,7 @@
 
 const int maxVocabularySize = 20000;
 std::unordered_map<std::string, int> wordToIndex;
-static int index = 1;
-
-std::vector<std::vector<std::string>> tokenizeData(const std::vector<std::string>& textData) {
-    std::vector<std::vector<std::string>> tokenizedData;
-    for (const std::string& text : textData) {
-        boost::tokenizer<boost::escaped_list_separator<char>> tok(text);  // Use robust tokenizer
-        tokenizedData.push_back(std::vector<std::string>(tok.begin(), tok.end()));
-    }
-    return tokenizedData;
-}
+static int wordIndex = 1;
 
 std::set<std::string> createVocabulary(const std::vector<std::vector<std::string>>& tokenizedData) {
     std::set<std::string> vocabulary;
@@ -32,8 +23,8 @@ void padData(std::vector<std::vector<int>>& numData, int maxSequenceLength, int 
 
 void createWordIdx(const std::set<std::string>& vocabulary) {
     for (const std::string& word : vocabulary) {
-        wordToIndex[word] = index;
-        index++;
+        wordToIndex[word] = wordIndex;
+        wordIndex++;
     }
 }
 
