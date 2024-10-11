@@ -1,48 +1,62 @@
 #include "csvReader.h"
 #include <iostream>
-#include <sstream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
-#include <random>
-#include <algorithm>
+#include <unordered_map>
 
-
-std::vector<std::string> readData(const std::string& filename) {
+std::pair<std::vector<std::string>, std::vector<double>> readCSV(const std::string& filename) {
     std::ifstream file(filename);
-    std::vector<std::string> data;
-
     if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return data; // Return empty data on error
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        exit(1);
     }
 
-    std::string line;
+    std::vector<std::string> commentText;
+    std::vector<double> toxic;
+    std::unordered_map<std::string, int> unexpectedValues;
+
+    std::string line, cell;
+    std::getline(file, line); // Skip header row
+
+    // Create a log file
+    std::ofstream logFile("error_log.log");
+
     while (std::getline(file, line)) {
-        // boost::tokenizer<boost::escaped_list_separator<char>> tok(line);
-        data.push_back(line);
-    }
+        std::stringstream lineStream(line);
+        std::getline(lineStream, cell, ','); // Extract comment_text column
+        commentText.push_back(cell);
 
-    return data;
-}
-
-std::vector<double> convertToDouble(const std::vector<std::string>& stringVector) {
-    std::vector<double> doubleVector;
-
-    for (const auto& str : stringVector) {
+        std::getline(lineStream, cell, ','); // Extract toxic column
         try {
-            // Attempt to convert the string to double and push it into the new vector
-            double convertedValue = std::stod(str);
-            doubleVector.push_back(convertedValue);
+            double toxicValue = std::stod(cell);
+            if (toxicValue != 0.0 && toxicValue != 1.0) {
+                unexpectedValues[cell]++;
+                logFile << "Warning: Unexpected value in toxic column: " << cell << std::endl;
+            }
+            toxic.push_back(toxicValue);
         } catch (const std::invalid_argument& e) {
-            // Handle conversion errors if needed
-            std::cerr << "Error converting string to double: " << e.what() << std::endl;
+            unexpectedValues[cell]++;
+            logFile << "Error: Invalid conversion to double: " << cell << std::endl;
+            toxic.push_back(0.0); // or some other default value
+        } catch (const std::out_of_range& e) {
+            unexpectedValues[cell]++;
+            logFile << "Error: Out of range conversion to double: " << cell << std::endl;
+            toxic.push_back(0.0); // or some other default value
         }
     }
 
-    return doubleVector;
-}
+    logFile << "Unexpected values in toxic column:" << std::endl;
+    for (const auto& pair : unexpectedValues) {
+        logFile << pair.first << ": " << pair.second << std::endl;
+    }
 
+    file.close();
+    logFile.close();
+
+    return std::make_pair(commentText, toxic);
+}
 
 void printSample (std::vector<std::string> sample) {
     std::cout << "First 10 rows from the of the data set are : " << std::endl;

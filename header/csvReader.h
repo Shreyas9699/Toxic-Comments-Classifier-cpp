@@ -2,6 +2,5 @@
 #include <vector>
 #include <string>
 
-std::vector<std::string> readData(const std::string& filename);
-std::vector<double> convertToDouble(const std::vector<std::string>& stringVector);
+std::pair<std::vector<std::string>, std::vector<double>> readCSV(const std::string& filename);
 void printSample (std::vector<std::string> sample);
