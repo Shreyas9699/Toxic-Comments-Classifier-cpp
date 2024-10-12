@@ -7,8 +7,8 @@ CodeSpace and Github was not allowing to upload files greater than 25MB, hence u
 `sudo apt-get update` <br/>
 `sudo apt-get install p7zip-full`
 
-`7z x train.7z` <br/>
-`7z x test.7z`
+`7z x train.7z -odata/` <br/>
+`7z x test.7z -odata/`
 
 Once you have the .csv files, we will need to do some data process!<br/>
 I have used the `DataPreProcessor.py` file, since the comments have a lot of new line and processing it via C++ was bit overwhelming!

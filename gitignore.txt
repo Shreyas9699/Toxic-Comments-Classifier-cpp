@@ -3,4 +3,3 @@ vgcore.*
 data/glove.6B.50d.txt
 main
 *.log
-*.csv
