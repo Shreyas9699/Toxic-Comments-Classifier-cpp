@@ -1,63 +1,95 @@
-# Toxic-Comments-Classifier-cpp
+# Toxic Comments Classifier
+
+## Overview
+
+The Toxic Comments Classifier is a machine learning project that aims to detect toxic comments on online platforms. Built using C++, this project utilizes word embeddings and a simple multi-layer perceptron (MLP) to classify comments as toxic or non-toxic. It achieves over 90% accuracy, contributing to healthier online discussions by effectively filtering harmful content.
 
 
+## Features
 
-CodeSpace and Github was not allowing to upload files greater than 25MB, hence uploaded a .7z file less than 25MB and extracted the content via codespace terminal.
+- **Toxicity Detection**: Classifies comments based on their toxicity level.
+- **Word Embeddings**: Utilizes GloVe embeddings for feature extraction.
+- **MLP Architecture**: Implements a simple multi-layer perceptron for classification.
+- **Data Handling**: Efficiently processes and manages training and testing data.
 
-`sudo apt-get update` <br/>
-`sudo apt-get install p7zip-full`
+## Getting Started
 
-`7z x train.7z -odata/` <br/>
-`7z x test.7z -odata/`
+### Prerequisites
 
-Once you have the .csv files, we will need to do some data process!<br/>
-I have used the `DataPreProcessor.py` file, since the comments have a lot of new line and processing it via C++ was bit overwhelming!
+- C++ compiler (e.g., g++, clang++)
+- Git LFS (if handling large files like GloVe embeddings)
+- [Glove](https://nlp.stanford.edu/projects/glove/) 
+    - glove.6B.100d.txt (used in this project)
 
-Just run the py code and it will generate the new files that containts only the necessary files.<br />
-I have futher cleared all the data an took only 300 record comments only each type is dsitributed equally.
+### Setup Instructions
 
-## Steps involved in prepardng data
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Shreyas9699/Toxic-Comments-Classifier-cpp.git
+   cd Toxic-Comments-Classifier-cpp
+   ```
+2. Compile the Project: To compile the project, use the following command:
+    ```bash
+    g++ -g -std=c++17 main.cpp header/MLPerceptrons.cpp header/DataProcessor.cpp -o main
+    ```
+3. Run the Classifier: Execute the compiled program:
+    ```bash
+    ./main
+    ```
+4. You should be able to see sample inputs before the training and post-training sample predictions from the test_data.csv file. 
 
-### tokenizeData :
-This function takes a vector of strings and tokenizes each string using the boost::tokenizer with an escaped_list_separator. The result is a vector of vectors of strings, where each inner vector represents the tokens of a corresponding input string.
+5. The program will also ask the user to input a comment and predict whether the given statement/comment was toxic or not using the trained model.
 
-### createVocabulary :
-This function takes tokenized data and creates a vocabulary by inserting unique words from the tokenized data into a set. It ensures that the vocabulary size does not exceed a maximum specified size.
+### File Structure
 
-### padData function :
-This function pads each sequence in the numeric datawith a specified padding token index to achieve a uniform sequence length (`maxSequenceLength`).
+```CSS
+.
+├── data
+│   ├── glove.6B.100d.txt
+│   ├── train_data.csv
+│   └── test_data.csv
+├── header
+│   ├── DataProcessor.cpp
+│   ├── DataProcessor.h
+│   ├── MLPerceptrons.cpp
+│   └── MLPerceptrons.h
+├── main.cpp
+└── README.md
+└── .gitattributes
+└── gitignore.txt
+└── test.7z
+└── train.7z
+```
 
-### createWordIdx function :
-Creates a word-to-index mapping by iterating through the provided vocabulary and assigning an index to each word. The indices start from 1 and are incremented for each unique word (Index 0 is used by padding token).
+### Contributing
+Contributions are welcome! If you'd like to improve this project, please fork the repository and submit a pull request.
 
-### tokenizeAndNumberizeData function :
-This function takes tokenized data and converts it into a numeric representation by replacing each token with its corresponding index from the wordToIndex mapping.
-
-### createEmbeddingMatrix function :
-This function creates a random embedding matrix of size vocabSize by embeddingDimension. It initializes the matrix with random values sampled from a uniform distribution between -0.5 and 0.5, providing a consistent initialization for the embeddings.
-
-The data is processed and now its ready to be feed to the Neural Network.
-
-## Training Model
-
-I have implemented a simple Multi-Layer Perceptron in my previous project [Link here](https://github.com/Shreyas9699/Neural-Network-CPP/tree/main).
-I have used the same code to create a MLP and then train the model with the above data.
-
-
-### Output:
-##### Commad: `g++ -g main.cpp header/csvReader.cpp header/MLPerceptrons.cpp header/Tokenizer.cpp header/dataPreProcessor.cpp -o main`
-Once training it done. You can enter test string where you can input strings to get and model will predict wether the string is toxic or non toxic. 
-
-![Alt text](media/image.png)
+### Acknowledgements
+[GloVe](https://nlp.stanford.edu/projects/glove/) for the pre-trained word embeddings.
 
 
-### Updates:
-> `10=OCT-2024` Added custom Tokenizer code, no need for Boost Lib anymore.
+### Contact
+For questions or feedback, feel free to reach out to me at [shreyas.official13@gmail.com](mailto:shreyas.official13@gmail.com).
 
 
-#### Remark:
-- Since this is a huge dataset and running it all in C++ causing memory leaks. And Since I still do not have enough experties in memory managment I have reduced the size to managable.
-- This is not optimized, I have justed wanted to try implement a working classifier in C++, Please feel free to take and optimized it!
-- The same dataset is already impleted in python using similar structure in python, [Click here](https://github.com/Shreyas9699/Convolutions-text-classification)
+### Notes:
+- The `train_data.csv` and `test_data.csv` are processed csv files. I have used the `DataPreProcessor.py` python script to process the raw data.
+- You can find the raw data `data/train.7z` and `test.7z`
+    - to unzip the data follow below commands
+        ```bash
+        cd Toxic-Comments-Classifier-cpp
+        sudo apt-get update
+        sudo apt-get install p7zip-ful
+        7z x train.7z -odata/
+        7z x test.7z -odata/
+        ```
+
+- To run the DataPreProcessor so recreate the `train_data.csv` and `test_data.csv` (feel free to modify the `DataPreProcessor.py` based on your requirement)
+    ```bash
+    python DataPreProcessor.py
+    ```
+
+- If you are not able to download the `glove.6B.100d.txt` or want to get it manually, [Click here](https://nlp.stanford.edu/data/glove.6B.zip) to download the latest Glove 6B file or visit [GloVe](https://nlp.stanford.edu/projects/glove/)
+
 
 
