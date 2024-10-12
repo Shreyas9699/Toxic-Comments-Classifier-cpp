@@ -11,13 +11,12 @@ train_df = train_df[['comment_text', 'toxic']]
 test_df = test_df[['comment_text']]
 
 # Replace newline characters with spaces and convert to lowercase
-train_df['comment_text'] = train_df['comment_text'].apply(lambda x: re.sub(r'\n', r'\\n', x)).str.lower()
-test_df['comment_text'] = test_df['comment_text'].apply(lambda x: re.sub(r'\n', r'\\n', x)).str.lower()
-
+train_df['comment_text'] = train_df['comment_text'].apply(lambda x: re.sub(r'\n', ' ', x)).str.lower()
+test_df['comment_text'] = test_df['comment_text'].apply(lambda x: re.sub(r'\n', ' ', x)).str.lower()
 
 # Remove special characters, excluding single quotes
-train_df['comment_text'] = train_df['comment_text'].apply(lambda x: re.sub(r"[^a-zA-Z0-9\s']", '', x))
-test_df['comment_text'] = test_df['comment_text'].apply(lambda x: re.sub(r"[^a-zA-Z0-9\s']", '', x))
+train_df['comment_text'] = train_df['comment_text'].apply(lambda x: re.sub(r"[^a-zA-Z0-9\s']", ' ', x))
+test_df['comment_text'] = test_df['comment_text'].apply(lambda x: re.sub(r"[^a-zA-Z0-9\s']", ' ', x))
 
 # Write DataFrames to CSV files
 train_df.to_csv('data/train_data.csv', index=False)

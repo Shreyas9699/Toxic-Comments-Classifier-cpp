@@ -1,223 +1,107 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <thread>
-#include <mutex>
-#include <queue>
-#include <condition_variable>
-#include "header/csvReader.h"
-#include "header/MLPerceptrons.h"
-#include "header/dataPreProcessor.h"
-#include "header/Tokenizer.h"
+#include <fstream>
+#include "header/DataProcessor.h"
 
-// Thread-safe queue for batch processing
-class ThreadSafeQueue 
-{
-private:
-    std::queue<std::vector<std::string>> queue;
-    std::mutex mutex;
-    std::condition_variable cond;
-    bool finished = false;
-
-public:
-    void push(const std::vector<std::string>& value) {
-        std::lock_guard<std::mutex> lock(mutex);
-        queue.push(value);
-        cond.notify_all();
+int main() {
+    // Open log file for output
+    std::ofstream logFile("main.log"); // Specify the log file name here
+    if (!logFile) {
+        std::cerr << "Error opening log file." << std::endl;
+        return 1; // Exit if file can't be opened
     }
 
-    bool pop(std::vector<std::string>& value) {
-        std::unique_lock<std::mutex> lock(mutex);
-        cond.wait(lock, [this] { return !queue.empty() || finished; });
-        if (queue.empty() && finished) return false;
-        value = queue.front();
-        queue.pop();
-        return true;
-    }
+    // Load GloVe embeddings
+    auto embeddings = loadGloVeEmbeddings("data/glove.6B.100d.txt"); // Update path as needed
 
-    void setFinished() {
-        std::lock_guard<std::mutex> lock(mutex);
-        finished = true;
-        cond.notify_all();
-    }
-};
+    // Load and preprocess data
+    std::vector<std::pair<std::vector<double>, int>> training_data = loadTrainingData("data/train_data.csv", embeddings);
 
-// Function to process a batch of data
-void processBatch(ThreadSafeQueue& dataQueue, MultilayerPerceptron& mlpModel,
-                  std::vector<std::vector<double>>& embeddingMatrix,
-                  std::vector<double>& yTrainData, double& totalMSE, 
-                  int& processedSamples, std::mutex& mse_mutex) 
-                  {
-    std::vector<std::string> batch;
-    while (dataQueue.pop(batch)) 
-    {
-        std::vector<std::vector<std::string>> tokenizedBatch = tokenizeData(batch);
-        std::vector<std::vector<int>> numericBatch = tokenizeAndNumberizeData(tokenizedBatch);
-        padData(numericBatch, 400, wordToIndex["<PAD>"]);
+    // Define MLP structure
+    size_t input_size = 100;       // Size of GloVe vector
+    size_t hidden_layer_size = 10; // Number of neurons in the hidden layer
+    size_t num_epochs = 3;         // Number of training epochs
+    size_t batch_size = 32;        // Define your desired batch size
+    std::vector<size_t> layers = {input_size, hidden_layer_size, 1}; // Input, Hidden, Output
 
-        double batchMSE = 0.0;
-        for (size_t i = 0; i < numericBatch.size(); ++i) 
-        {
-            std::vector<double> input;
-            for (int index : numericBatch[i]) 
-            {
-                input.insert(input.end(), embeddingMatrix[index].begin(), embeddingMatrix[index].end());
+    MultilayerPerceptron mlp(layers);
+
+    // Train the model
+    for (size_t epoch = 0; epoch < num_epochs; ++epoch) {
+        std::vector<std::vector<double>> batch_features;
+        std::vector<double> batch_labels;
+
+        for (size_t i = 0; i < training_data.size(); ++i) {
+            batch_features.push_back(training_data[i].first);
+            batch_labels.push_back(static_cast<double>(training_data[i].second));
+
+            // If the batch is full or it's the last iteration
+            if (batch_features.size() == batch_size || i == training_data.size() - 1) {
+                // Perform backpropagation for the current batch
+                for (size_t j = 0; j < batch_features.size(); ++j) {
+                    mlp.backPropagation({batch_features[j]}, {batch_labels[j]}); // Call backpropagation for each sample
+                }
+
+                // Clear the batch
+                batch_features.clear();
+                batch_labels.clear();
             }
-            batchMSE += mlpModel.backPropagation(input, {yTrainData[processedSamples + i]});
         }
 
-        {
-            std::lock_guard<std::mutex> lock(mse_mutex);
-            totalMSE += batchMSE;
-            processedSamples += numericBatch.size();
-        }
+        // Print weights after each epoch to the log file
+        logFile << "Weights after epoch " << epoch + 1 << ":\n";
+        mlp.printWeights(logFile); // Assuming you modify printWeights to accept an ofstream
+        logFile << "Epoch " << epoch + 1 << " completed." << std::endl; // Optional: Print progress
     }
-}
 
-int main () {
-    std::pair<std::vector<std::string>, std::vector<double>> data = readCSV("data/train_data.csv");
-    size_t dataSize = data.first.size();
-    std::cout << "Train data set size: " << dataSize << std::endl;
-    std::cout << "Completed reading and loading the train csv data \n";
-    size_t toxicCommentsCount = std::count(data.second.begin(), data.second.end(), 1.0);
-    std::cout << "Toxic comments: " << toxicCommentsCount << "\n";
-    std::cout << "Non-toxic comments: " << dataSize - toxicCommentsCount << "\n";
-
-    std::cout << "Balancing the data set by taking only 20K non toxic comments as they are a lot more when compared against the toxic\n";
-
-    std::vector<std::string> commentText;
-    std::vector<double> toxicLable;
-
-    commentText.reserve(dataSize);
-    toxicLable.reserve(dataSize);
-
-    size_t nonToxicCount = 0;
-    for (size_t i = 0; i < dataSize; i++)
-    {
-        const std::string& comment = data.first[i];
-        const double& label = data.second[i];
-        if (label == 1.0 || (label == 0.0 && nonToxicCount < 20000))
-        {
-            commentText.emplace_back(comment);
-            toxicLable.emplace_back(label);
-            if (label == 0.0) nonToxicCount++;
+    // Calculate training accuracy
+    int correct_predictions = 0;
+    for (const auto& data_point : training_data) {
+        std::vector<double> predicted_output = mlp.run(data_point.first);
+        int predicted_label = predicted_output[0] > 0.5 ? 1 : 0; // Assuming binary classification
+        if (predicted_label == data_point.second) {
+            correct_predictions++;
         }
     }
 
-    data.first.clear();
-    data.second.clear();
-    std::pair<std::vector<std::string>, std::vector<double>> trainData = std::make_pair(std::move(commentText), std::move(toxicLable));
-    std::cout << trainData.first.size() << std::endl;
-	
-    //MultilayerPerceptron mlpModel({100, 66, 33, 1});
+    double training_accuracy = static_cast<double>(correct_predictions) / training_data.size();
+    std::cout << "Training Accuracy: " << training_accuracy * 100.0 << "%" << std::endl;
+    logFile << "Training Accuracy: " << training_accuracy * 100.0 << "%" << std::endl;
 
-    // // Tokenize
-    // std::vector<std::vector<std::string>> tokenizedData = tokenizeData(xTrainData);
+    // Predict on test data
+    predictTestData("data/test_data.csv", embeddings, mlp, logFile, 10);
 
-    //     // Create vocabulary
-    // std::set<std::string> vocabulary = createVocabulary(tokenizedData);
-    // std::cout << "Vocabulary size: " << vocabulary.size() << std::endl;
-    // createWordIdx(vocabulary);
-    // std::vector<std::vector<int>> numData = tokenizeAndNumberizeData(tokenizedData);
+    // Continuous input for testing the model
+    std::string input_comment;
+    std::cout << "\nEnter comments to check for toxicity (press Enter twice to exit):" << std::endl;
+    
+    while (true) {
+        std::getline(std::cin, input_comment); // Read a line of input
 
-    // // Pad
-    // padData(numData, 400, wordToIndex["<PAD>"]);  // Adjust maxSequenceLength and paddingToken as needed
+        logFile << "Input comment: " << input_comment << std::endl;
         
-    // // Create embedding matrix
-    // std::vector<std::vector<double>> embeddingMatrix = createEmbeddingMatrix(wordToIndex.size(), 50);  // Adjust embeddingDimension
-    // std::cout << "Embedding matrix dimensions: " << 
-    //             embeddingMatrix.size() << " x " << embeddingMatrix[0].size() << std::endl;
+        // Check for exit condition (double Enter)
+        if (input_comment.empty()) {
+            break; // Exit the loop if Enter is pressed twice
+        }
 
-    // int epochs = 800;
-    // double MSE;
-    // int batchSize = 100;
-    // ThreadSafeQueue dataQueue;
-    // std::mutex mse_mutex;
-    // int processedSamples = 0;
+        // Preprocess the comment
+        std::vector<double> features = preprocessComment(input_comment, embeddings);
 
-    // for (int i = 0; i < epochs; i++) {
-    //     MSE = 0.0;
-    //     processedSamples = 0;
+        // Predict using the model
+        std::vector<double> predicted_output = mlp.run(features);
+        int predicted_label = predicted_output[0] > 0.5 ? 1 : 0; // Assuming output is between 0 and 1
 
-    //     // Create batches
-    //     for (int j = 0; j < xTrainData.size(); j += batchSize) {
-    //         std::vector<std::string> batch(xTrainData.begin() + j, xTrainData.begin() + j + batchSize);
-    //         dataQueue.push(batch);
-    //     }
+        // Output the result
+        if (predicted_label == 1) {
+            logFile << "The comment is TOXIC." << std::endl;
+            std::cout << "The comment is TOXIC." << std::endl;
+        } else {
+            logFile << "The comment is NOT TOXIC." << std::endl;
+            std::cout << "The comment is not TOXIC." << std::endl;
+        }
+    }
 
-    //     dataQueue.setFinished(); // Call setFinished after pushing all data
-
-    //     // Process batches in parallel
-    //     std::vector<std::thread> threads;
-    //     for (int j = 0; j < 4; j++) {
-    //         threads.push_back(std::thread(processBatch, std::ref(dataQueue), std::ref(mlpModel), std::ref(embeddingMatrix), std::ref(yTrainData), std::ref(MSE), std::ref(processedSamples), std::ref(mse_mutex)));
-    //     }
-
-    //     // Wait for all threads to finish
-    //     for (auto& thread : threads) {
-    //         thread.join();
-    //     }
-
-    //     // Print the results
-    //     if ( i % 100 == 0) 
-    //     {
-    //         std::cout << i << "th run MSE is : " << MSE << std::endl;
-    //     }
-    // }
-    // MSE /= 2.0;            // number of different ouputs
-    // std::cout << "MSE :" << MSE << std::endl;
-    // // mlpModel.printWeights();
-
-    // // Classifier tester
-	// std::string inputString;
-
-	// while (true) {
-	// 	std::cout << "Enter a string (or press Enter twice to quit): ";
-	// 	getline(std::cin, inputString);
-
-	// 	if (inputString.empty()) {
-	// 		// Check for two consecutive empty inputs
-	// 		std::cout << "Enter another string to confirm quitting (or press Enter again to quit): ";
-	// 		getline(std::cin, inputString);
-
-	// 		if (inputString.empty()) {
-    //            break; // Exit the loop
-	// 		} else {
-	// 			// Process the input string as needed
-	// 			// (Replace this with your actual processing code)
-	// 			std::cout << "Processing string: " << inputString << std::endl;
-	// 		}
-	// 	}
-		
-	// 	std::vector<std::string> testData = {inputString};
-		
-	// 	// Preprocess test string
-    //     std::vector<std::vector<std::string>> testTokens = tokenizeData(testData);
-    //     std::vector<int> testIndices = tokenizeAndNumberizeData(testTokens)[0];
-    //     std::vector<std::vector<int>>padd = {testIndices};
-    //     padData(padd, 400, wordToIndex["<PAD>"]);
-
-    //     // Generate embeddings
-    //     std::vector<double> testInput;
-    //     for (int index : testIndices) {
-    //         if (index == wordToIndex["<PAD>"]) {
-    //         testInput.insert(testInput.end(), embeddingMatrix[0].begin(), embeddingMatrix[0].end());
-    //         } else {
-    //         testInput.insert(testInput.end(), embeddingMatrix[index].begin(), embeddingMatrix[index].end());
-    //         }
-    //     }
-
-    //     // Run model
-    //     std::vector<double> output = mlpModel.run(testInput);
-    //     double toxicityScore = output[0];
-
-    //     // Interpret output
-    //     if (toxicityScore >= 0.5) {
-    //         std::cout << "Test string is likely toxic." << std::endl;
-    //     } else {
-    //         std::cout << "Test string is likely non-toxic." << std::endl;
-    //     }
-	// }
-
-	return 0;
+    logFile << "Exiting the program." << std::endl;
+    logFile.close(); // Close the log file
+    std::cout << "Exiting the program." << std::endl;
+    return 0;
 }
