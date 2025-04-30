@@ -1,5 +1,7 @@
 massif.out*
 vgcore.*
 main
+*.exe
 *.log
 .vscode/
+*.bin
