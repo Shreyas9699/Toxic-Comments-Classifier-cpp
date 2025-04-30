@@ -195,6 +195,36 @@ std::vector<float> preprocessComment(const std::string& comment_text, const std:
     return features;
 }
 
+// spliting training data into training and validation
+std::pair<std::vector<std::pair<std::vector<float>, int>>, 
+          std::vector<std::pair<std::vector<float>, int>>> 
+splitTrainValidation(const std::vector<std::pair<std::vector<float>, int>>& data, float validation_ratio) 
+{
+    Timer t("Split training data into training and validation");
+    // First shuffle the data to ensure random split
+    std::vector<std::pair<std::vector<float>, int>> shuffled_data = data;
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(shuffled_data.begin(), shuffled_data.end(), g);
+    
+    // Calculate split point
+    size_t validation_size = static_cast<size_t>(shuffled_data.size() * validation_ratio);
+    size_t training_size = shuffled_data.size() - validation_size;
+    
+    // Create training and validation sets
+    std::vector<std::pair<std::vector<float>, int>> training_data(
+        shuffled_data.begin(), 
+        shuffled_data.begin() + training_size
+    );
+    
+    std::vector<std::pair<std::vector<float>, int>> validation_data(
+        shuffled_data.begin() + training_size, 
+        shuffled_data.end()
+    );
+    
+    return {training_data, validation_data};
+}
+
 // Function to load training data with optimizations
 std::vector<std::pair<std::vector<float>, int>> loadTrainingData(const std::string& filepath, std::unordered_map<std::string, std::vector<float>>& embeddings)
 {

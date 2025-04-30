@@ -13,6 +13,8 @@ std::unordered_map<std::string, std::vector<float>> loadGloVeEmbeddingsBinary(co
 
 std::vector<float> preprocessComment(const std::string& comment_text, const std::unordered_map<std::string, std::vector<float>>& embeddings);
 
+std::pair<std::vector<std::pair<std::vector<float>, int>>, std::vector<std::pair<std::vector<float>, int>>> splitTrainValidation(const std::vector<std::pair<std::vector<float>, int>>& data, float validation_ratio);
+
 std::vector<std::pair<std::vector<float>, int>> loadTrainingData(const std::string& filepath, std::unordered_map<std::string, std::vector<float>>& embeddings);
 
 void predictTestData(const std::string& testFilePath, const std::unordered_map<std::string, std::vector<float>>& embeddings, MultilayerPerceptron& mlp, std::ofstream& logFile, size_t print_limit = 5) ;
