@@ -28,37 +28,50 @@ The Toxic Comments Classifier is a machine learning project that aims to detect 
    git clone https://github.com/Shreyas9699/Toxic-Comments-Classifier-cpp.git
    cd Toxic-Comments-Classifier-cpp
    ```
-2. Compile the Project: To compile the project, use the following command:
+
+2. [Click here](https://nlp.stanford.edu/data/glove.6B.zip) to download the latest Glove 6B file or visit [GloVe](https://nlp.stanford.edu/projects/glove/), unzip them and copy `glove.6B.100d.txt` to `data/glove6B/`
+
+3. run the `utility/TextToBinary.cpp`, make sure to the input and outfile names are correct in the file, to convert into a binary file for faster loading.
+
+4. Compile the Project: To compile the project, use the following command:
     ```bash
     g++ -g -std=c++17 main.cpp header/MLPerceptrons.cpp header/DataProcessor.cpp -o main
     ```
-3. Run the Classifier: Execute the compiled program:
+    Or 
+    Build if using Visual Studio
+
+5. Run the Classifier: Execute the compiled program:
     ```bash
     ./main
     ```
-4. You should be able to see sample inputs before the training and post-training sample predictions from the test_data.csv file. 
+6. You should be able to see model details, time take for each epoch on console and weights after each epoch in `main.log`. 
 
-5. The program will also ask the user to input a comment and predict whether the given statement/comment was toxic or not using the trained model.
 
 ### File Structure
-
-```CSS
+```
 .
 ├── data
-│   ├── glove.6B.100d.txt
+│   ├── glove6B
+│   │   ├── glove.6B.100d.txt
+│   │   ├── glove.6B.100d.bin
+│   │   ├── glove.6B.50d.txt
+│   │   ├── glove.6B.200d.txt
+│   │   └── glove.6B.300d.txt
 │   ├── train_data.csv
-│   └── test_data.csv
+│   ├── test_data.csv
+│   ├── test.7z
+│   └── train.7z
 ├── header
 │   ├── DataProcessor.cpp
 │   ├── DataProcessor.h
 │   ├── MLPerceptrons.cpp
 │   └── MLPerceptrons.h
+├── utility
+│   ├── DataPreProcessor.py
+│   └── TextToBinary.cpp
 ├── main.cpp
 └── README.md
-└── .gitattributes
 └── gitignore.txt
-└── test.7z
-└── train.7z
 ```
 
 ### Contributing
