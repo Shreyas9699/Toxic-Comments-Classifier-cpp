@@ -37,7 +37,7 @@ This repo is an extension of [Basic Architecture](https://github.com/Shreyas9699
 
 4. Compile the Project: To compile the project, use the following command:
     ```bash
-    g++ -g -std=c++17 main.cpp header/MLPerceptrons.cpp header/DataProcessor.cpp -o main
+    g++ -g -std=c++17 main.cpp header/Activation.cpp header/MLPerceptrons.cpp header/DataProcessor.cpp -o main
     ```
     Or 
     Build if using Visual Studio
@@ -45,7 +45,9 @@ This repo is an extension of [Basic Architecture](https://github.com/Shreyas9699
 5. Run the Classifier: Execute the compiled program:
     ```bash
     ./main
-    # same ass
+    ```
+    Same as
+    ```bash
     ./main --train data/train_data.csv --test data/test_data.csv --val_ratio 0.2 --glove data/glove6B/glove.6B.100d.bin --epochs 3 --lr 0.01 --batch_size 64 --log main.log --hidden_layers 64,32,16 --activation TANH --bias 1.0 --dropout 0.2
     ```
 6. You should be able to see model details, time take for each epoch on console and weights after each epoch in `main.log`. 

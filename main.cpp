@@ -97,26 +97,31 @@ int main(int argc, char* argv[])
     }
 
     // Parse activation function
-    ActivationType activation_type;
+    Activation::Type activation_type;
     if (activation_str == "RELU")
     {
-        activation_type = ActivationType::RELU;
+        activation_type = Activation::Type::RELU;
     }
     else if (activation_str == "SIGMOID")
     {
-        activation_type = ActivationType::SIGMOID;
+        activation_type = Activation::Type::SIGMOID;
     }
     else if (activation_str == "LEAKY_RELU")
     {
-        activation_type = ActivationType::LEAKY_RELU;
+        activation_type = Activation::Type::LEAKY_RELU;
     }
     else if (activation_str == "STEP")
     {
-        activation_type = ActivationType::STEP;
+        activation_type = Activation::Type::STEP;
+    }
+    else if (activation_str == "TANH")
+    {
+        activation_type = Activation::Type::TANH;
     }
     else
     {
-        activation_type = ActivationType::TANH; // Default
+		std::cout << "Invalid activation function specified. Defaulting to TANH." << std::endl;
+        activation_type = Activation::Type::TANH; // Default
     }
 
     // Display all parameters
