@@ -29,7 +29,7 @@ std::unordered_map<std::string, std::vector<float>> loadGloVeEmbeddings(const st
     if (!file) 
     {
         std::cerr << "Cannot open " << filepath << std::endl;
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     std::string line;
@@ -66,7 +66,7 @@ std::unordered_map<std::string, std::vector<float>> loadGloVeEmbeddingsBinary(co
     if (!in.is_open()) 
     {
         std::cerr << "Cannot open binary file: " << filename << std::endl;
-        return embeddings;
+        exit(EXIT_FAILURE);
     }
 
     // Read vocabulary size from header
@@ -294,7 +294,7 @@ void predictTestData(const std::string& testFilePath, const std::unordered_map<s
     if (!testFile) 
     {
         std::cerr << "Error opening test file." << std::endl;
-        return;
+        exit(EXIT_FAILURE);
     }
 
     std::string line;
