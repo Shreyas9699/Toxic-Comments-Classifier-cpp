@@ -2,15 +2,15 @@
 #include "header/DataProcessor.h"
 #include "header/Timer.h"
 
-std::unordered_map<std::string, std::string> parseFlags(int argc, char* argv[]) 
+std::unordered_map<std::string, std::string> parseFlags(int argc, char* argv[])
 {
     std::unordered_map<std::string, std::string> M;
-    for(int i = 1; i < argc; i++) 
+    for (int i = 1; i < argc; i++)
     {
         std::string arg = argv[i];
-        if(arg.rfind("--", 0) == 0) 
+        if (arg.rfind("--", 0) == 0)
         {
-            if (arg == "--help") 
+            if (arg == "--help")
             {
                 M["help"] = "";
             }
@@ -28,51 +28,52 @@ std::unordered_map<std::string, std::string> parseFlags(int argc, char* argv[])
     return M;
 }
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     auto flags = parseFlags(argc, argv);
 
-    if (flags.count("help")) 
+    if (flags.count("help"))
     {
         std::cout
-          << "Usage: ./main [--train PATH] [--test PATH] [--glove PATH] "
-             "[--epochs N] [--lr FLOAT] [--batch_size N] [--log FILE] "
-             "[--hidden_layers N,N,...] [--activation TANH|RELU|SIGMOID] "
-             "[--bias FLOAT] [--dropout FLOAT]\n"
-          << "Defaults:\n"
-          << "  --train         data/train_data.csv\n"
-          << "  --test          data/test_data.csv\n"
-          << "  --val_ratio     0.2\n"
-          << "  --glove         data/glove6B/glove.6B.100d.bin\n"
-          << "  --epochs        3\n"
-          << "  --lr            0.01\n"
-          << "  --batch_size    64\n"
-          << "  --log           main.log\n"
-          << "  --hidden_layers 64,32,16\n"
-          << "  --activation    TANH\n"
-          << "  --bias          1.0\n"
-          << "  --dropout       0.2\n";
+            << "Usage: ./main [--train PATH] [--test PATH] [--glove PATH] "
+            "[--epochs N] [--lr FLOAT] [--batch_size N] [--log FILE] "
+            "[--hidden_layers N,N,...] [--activation TANH|RELU|SIGMOID] "
+            "[--bias FLOAT] [--dropout FLOAT]\n"
+            << "Defaults:\n"
+            << "  --train         data/train_data.csv\n"
+            << "  --test          data/test_data.csv\n"
+            << "  --val_ratio     0.2\n"
+            << "  --glove         data/glove6B/glove.6B.100d.bin\n"
+            << "  --epochs        3\n"
+            << "  --lr            0.01\n"
+            << "  --batch_size    64\n"
+            << "  --log           main.log\n"
+            << "  --hidden_layers 64,32,16\n"
+            << "  --activation    TANH\n"
+            << "  --bias          1.0\n"
+            << "  --dropout       0.2\n";
         return 0;
     }
 
     // Parse basic parameters
-    std::string train_path    = flags.count("train")      ? flags["train"]  : "data/train_data.csv";
-    std::string test_path     = flags.count("test")       ? flags["test"]   : "data/test_data.csv";
-    std::string glove_path    = flags.count("glove")      ? flags["glove"]  : "data/glove6B/glove.6B.100d.bin";
-    int epochs                = flags.count("epochs")     ? std::stoi(flags["epochs"])    : 3;
-    double lr                 = flags.count("lr")         ? std::stod(flags["lr"])        : 0.01;
-    int batch_size            = flags.count("batch_size") ? std::stoi(flags["batch_size"]): 64;
-    std::string log_file      = flags.count("log")        ? flags["log"]    : "main.log";
-    float validation_ratio     = flags.count("val_ratio") ? std::stof(flags["val_ratio"]) : 0.2;
+    std::string train_path  = flags.count("train") ? flags["train"] : "data/train_data.csv";
+    std::string test_path   = flags.count("test") ? flags["test"] : "data/test_data.csv";
+    std::string glove_path  = flags.count("glove") ? flags["glove"] : "data/glove6B/glove.6B.100d.bin";
+    int epochs              = flags.count("epochs") ? std::stoi(flags["epochs"]) : 3;
+    double lr               = flags.count("lr") ? std::stod(flags["lr"]) : 0.01;
+    int batch_size          = flags.count("batch_size") ? std::stoi(flags["batch_size"]) : 64;
+    std::string log_file    = flags.count("log") ? flags["log"] : "main.log";
+    float validation_ratio  = flags.count("val_ratio") ? static_cast<float>(std::stof(flags["val_ratio"])) : 0.2f;
+    
     // Parse model architecture parameters
     std::string hidden_layers_str = flags.count("hidden_layers") ? flags["hidden_layers"] : "64,32,16";
-    std::string activation_str = flags.count("activation") ? flags["activation"] : "TANH";
-    float bias               = flags.count("bias")  ? std::stof(flags["bias"]) : 1.0f;
-    float dropout            = flags.count("dropout")   ? std::stof(flags["dropout"])  : 0.2f;
+    std::string activation_str    = flags.count("activation") ? flags["activation"] : "TANH";
+    float bias                    = flags.count("bias") ? std::stof(flags["bias"]) : 1.0f;
+    float dropout                 = flags.count("dropout") ? std::stof(flags["dropout"]) : 0.2f;
 
     // Set up logging
     std::ofstream logFile(log_file);
-    if (!logFile) 
+    if (!logFile)
     {
         std::cerr << "Error opening log file." << std::endl;
         return 1;
@@ -82,13 +83,13 @@ int main(int argc, char* argv[])
     std::vector<size_t> hidden_layers;
     std::stringstream ss(hidden_layers_str);
     std::string item;
-    while (std::getline(ss, item, ',')) 
+    while (std::getline(ss, item, ','))
     {
-        try 
+        try
         {
             hidden_layers.push_back(std::stoi(item));
-        } 
-        catch (const std::exception& e) 
+        }
+        catch (const std::exception& e)
         {
             std::cerr << "Error parsing hidden layer dimensions: " << e.what() << std::endl;
             return 1;
@@ -97,23 +98,23 @@ int main(int argc, char* argv[])
 
     // Parse activation function
     ActivationType activation_type;
-    if (activation_str == "RELU") 
+    if (activation_str == "RELU")
     {
         activation_type = ActivationType::RELU;
     }
-    else if (activation_str == "SIGMOID") 
+    else if (activation_str == "SIGMOID")
     {
         activation_type = ActivationType::SIGMOID;
     }
-    else if (activation_str == "LEAKY_RELU") 
+    else if (activation_str == "LEAKY_RELU")
     {
         activation_type = ActivationType::LEAKY_RELU;
     }
-    else if (activation_str == "STEP") 
+    else if (activation_str == "STEP")
     {
         activation_type = ActivationType::STEP;
     }
-    else 
+    else
     {
         activation_type = ActivationType::TANH; // Default
     }
@@ -154,9 +155,15 @@ int main(int argc, char* argv[])
     auto embeddings = loadGloVeEmbeddingsBinary(glove_path);
 
     // Load and preprocess data
-    std::vector<std::pair<std::vector<float>, int>> all_data = loadTrainingData(train_path, embeddings);
-    auto [training_data, validation_data] = splitTrainValidation(all_data, validation_ratio);
-    
+    auto all_data = loadTrainingData(train_path, embeddings);
+    auto split_result = splitTrainValidation(all_data, validation_ratio);
+
+    auto training_data = std::move(split_result.first);
+    auto validation_data = std::move(split_result.second);
+
+    all_data.clear();
+    all_data.shrink_to_fit();
+
     std::cout << "Training data size: " << training_data.size() << std::endl;
     std::cout << "Validation data size: " << validation_data.size() << std::endl;
 
@@ -166,11 +173,11 @@ int main(int argc, char* argv[])
 
     // Define MLP structure
     size_t input_size = 100;       // Size of GloVe vector
-    
+
     // Create complete layer structure (input + hidden + output)
     std::vector<size_t> layers;
     layers.push_back(input_size);  // Input layer
-    for (size_t hidden_size : hidden_layers) 
+    for (size_t hidden_size : hidden_layers)
     {
         layers.push_back(hidden_size);
     }
@@ -204,7 +211,7 @@ int main(int argc, char* argv[])
     std::vector<float> validation_accuracies;
 
     mlp.setTrainingMode(true);
-    for (size_t epoch = 0; epoch < epochs; ++epoch) 
+    for (size_t epoch = 0; epoch < epochs; ++epoch)
     {
         std::string epoch_str = "Epoch " + std::to_string(epoch + 1);
         Timer t(epoch_str);
@@ -220,7 +227,7 @@ int main(int argc, char* argv[])
         std::mt19937 g(rd());
         std::shuffle(training_data.begin(), training_data.end(), g);
 
-        for (size_t i = 0; i < training_data.size(); ++i) 
+        for (size_t i = 0; i < training_data.size(); ++i)
         {
             batch_features.push_back(training_data[i].first);
             batch_labels.push_back(static_cast<float>(training_data[i].second));
@@ -228,18 +235,18 @@ int main(int argc, char* argv[])
             // Run prediction for accuracy calculation
             std::vector<float> predicted_output = mlp.run(training_data[i].first);
             int predicted_label = predicted_output[0] > 0.5 ? 1 : 0;
-            if (predicted_label == training_data[i].second) 
+            if (predicted_label == training_data[i].second)
             {
                 correct_train++;
             }
 
             // If the batch is full or it's the last iteration
-            if (batch_features.size() == batch_size || i == training_data.size() - 1) 
+            if (batch_features.size() == batch_size || i == training_data.size() - 1)
             {
                 // Perform backpropagation for the current batch
-                for (size_t j = 0; j < batch_features.size(); ++j) 
+                for (size_t j = 0; j < batch_features.size(); ++j)
                 {
-                    float loss = mlp.backPropagation({batch_features[j]}, {batch_labels[j]});
+                    float loss = mlp.backPropagation({ batch_features[j] }, { batch_labels[j] });
                     epoch_loss += loss;
                 }
                 batch_features.clear();
@@ -251,13 +258,13 @@ int main(int argc, char* argv[])
         float train_accuracy = static_cast<float>(correct_train) / training_data.size();
         training_losses.push_back(epoch_loss);
         training_accuracies.push_back(train_accuracy);
-    
+
         // Validation phase (no backpropagation)
         mlp.setTrainingMode(false);
         float val_loss = 0.0f;
         int correct_val = 0;
 
-        for(const auto& data_point: validation_data)
+        for (const auto& data_point : validation_data)
         {
             std::vector<float> predicted_output = mlp.run(data_point.first);
             int predicted_label = predicted_output[0] > 0.5 ? 1 : 0;
@@ -268,7 +275,7 @@ int main(int argc, char* argv[])
             float sample_loss = -(label * log(pred + 1e-8f) + (1.0f - label) * log(1.0f - pred + 1e-8f));
             val_loss += sample_loss;
 
-            if (predicted_label == data_point.second) 
+            if (predicted_label == data_point.second)
             {
                 correct_val++;
             }
@@ -286,15 +293,15 @@ int main(int argc, char* argv[])
         logFile << "Epoch " << epoch + 1 << " metrics:" << std::endl;
         logFile << "  Training Loss: " << epoch_loss << ", Training Accuracy: " << train_accuracy * 100.0f << "%" << std::endl;
         logFile << "  Validation Loss: " << val_loss << ", Validation Accuracy: " << val_accuracy * 100.0f << "%" << std::endl;
-    
+
         // Print to console
-        std::cout << "Epoch " << epoch + 1 << "/" << epochs 
-                << " - Loss: " << epoch_loss 
-                << " - Accuracy: " << train_accuracy * 100.0f << "%" 
-                << " - Val Loss: " << val_loss 
-                << " - Val Accuracy: " << val_accuracy * 100.0f << "%" 
-                << std::endl;
-    
+        std::cout << "Epoch " << epoch + 1 << "/" << epochs
+            << " - Loss: " << epoch_loss
+            << " - Accuracy: " << train_accuracy * 100.0f << "%"
+            << " - Val Loss: " << val_loss
+            << " - Val Accuracy: " << val_accuracy * 100.0f << "%"
+            << std::endl;
+
 
         logFile << "Weights after epoch " << epoch + 1 << ":\n";
         mlp.printWeights(logFile);
@@ -308,11 +315,11 @@ int main(int argc, char* argv[])
     std::cout << "Calculate training accuracy" << std::endl;
     logFile << "Calculate training accuracy" << std::endl;
     int correct_predictions = 0;
-    for (const auto& data_point : training_data) 
+    for (const auto& data_point : training_data)
     {
         std::vector<float> predicted_output = mlp.run(data_point.first);
         int predicted_label = predicted_output[0] > 0.5 ? 1 : 0;
-        if (predicted_label == data_point.second) 
+        if (predicted_label == data_point.second)
         {
             correct_predictions++;
         }
@@ -330,15 +337,15 @@ int main(int argc, char* argv[])
     // Continuous input for testing the model
     std::string input_comment;
     std::cout << "\nEnter comments to check for toxicity (press Enter twice to exit):" << std::endl;
-    
-    while (true) 
+
+    while (true)
     {
         std::getline(std::cin, input_comment); // Read a line of input
 
         logFile << "Input comment: " << input_comment << std::endl;
-        
+
         // Check for exit condition (double Enter)
-        if (input_comment.empty()) 
+        if (input_comment.empty())
         {
             break;
         }
@@ -351,12 +358,12 @@ int main(int argc, char* argv[])
         int predicted_label = predicted_output[0] > 0.5 ? 1 : 0;
 
         // Output the result
-        if (predicted_label == 1) 
+        if (predicted_label == 1)
         {
             logFile << "The comment is TOXIC." << std::endl;
             std::cout << "The comment is TOXIC." << std::endl;
         }
-        else 
+        else
         {
             logFile << "The comment is NOT TOXIC." << std::endl;
             std::cout << "The comment is NOT TOXIC." << std::endl;

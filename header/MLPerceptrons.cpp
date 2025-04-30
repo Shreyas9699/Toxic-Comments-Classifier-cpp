@@ -3,7 +3,7 @@
 
 float frand()
 {
-    return (2.0f * (float)rand() / RAND_MAX) - 1.0f;
+    return static_cast<float>((2.0 * rand() / RAND_MAX) - 1.0);
 }
 
 // Activation and derivative functions
@@ -196,7 +196,7 @@ std::vector<float> MultilayerPerceptron::run(std::vector<float> x)
         {
             for (size_t j = 0; j < layers[i]; j++)
             {
-                if ((float)rand() / RAND_MAX < dropout_rate)
+                if (static_cast<float>(rand() / static_cast<double>(RAND_MAX)) < dropout_rate)
                 {
                     // Drop this neuron
                     values[i][j] = 0.0f;

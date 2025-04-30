@@ -20,7 +20,7 @@ This repo is an extension of [Basic Architecture](https://github.com/Shreyas9699
 
 ## Getting Started
 ### Prerequisites
-- C++ compiler (e.g., g++, clang++ or Visual Studio)
+- C++ compiler (e.g., g++, clang++ or Visual Studio(C++ 17 or above) )
 - [GloVe](https://nlp.stanford.edu/projects/glove/) 
     - glove.6B.100d.txt (used in this project)
 
