@@ -4,25 +4,27 @@
 
 The Toxic Comments Classifier is a machine learning project that aims to detect toxic comments on online platforms. Built using C++, this project utilizes word embeddings and a simple multi-layer perceptron (MLP) to classify comments as toxic or non-toxic. It achieves over 90% accuracy, contributing to healthier online discussions by effectively filtering harmful content.
 
+This repor is extention to [Basic Architecture](https://github.com/Shreyas9699/Neural-Network-CPP), check it out to get overview of the MLP and Perceptron implementation
 
 ## Features
-
-- **Toxicity Detection**: Classifies comments based on their toxicity level.
-- **Word Embeddings**: Utilizes GloVe embeddings for feature extraction.
-- **MLP Architecture**: Implements a simple multi-layer perceptron for classification.
-- **Data Handling**: Efficiently processes and manages training and testing data.
+- *header/DataProcessor.*{*h,cpp*}
+    > For loading glove word embeddings, training data, prediciting test data post model is trained.
+- *header/MLPerceptrons.*{*h,cpp*}
+    > Implements Perceptron, multilayer perceptrons, activation function, uses Binary Cross-Entropy Loss instead of MSE, different activation functions (sigmoid, relu, thanh, step, leaky_relu), apply dropout only during training and only to hidden layers, weight initialization, forward/backward pass details.
+- *utility/DataPreProcessor.py*
+    > For preprocess the raw data from `data/train.7z` and `test.7z`.
+- *utility/TextToBinary.cpp*
+    > Converts the word embedding file into binar for faster loading (~3m to 5s)
+- *main.cpp*
+    > Based on the activation function specified and model layers, the model is trained and then user is promted to enter text and mode predicts whether it is Toixc or Non Toxic
 
 ## Getting Started
-
 ### Prerequisites
-
-- C++ compiler (e.g., g++, clang++)
-- Git LFS (if handling large files like GloVe embeddings)
+- C++ compiler (e.g., g++, clang++ or Visual Studio)
 - [Glove](https://nlp.stanford.edu/projects/glove/) 
     - glove.6B.100d.txt (used in this project)
 
 ### Setup Instructions
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/Shreyas9699/Toxic-Comments-Classifier-cpp.git
@@ -103,6 +105,3 @@ For questions or feedback, feel free to reach out to me at [shreyas.official13@g
     ```
 
 - If you are not able to download the `glove.6B.100d.txt` or want to get it manually, [Click here](https://nlp.stanford.edu/data/glove.6B.zip) to download the latest Glove 6B file or visit [GloVe](https://nlp.stanford.edu/projects/glove/)
-
-
-
